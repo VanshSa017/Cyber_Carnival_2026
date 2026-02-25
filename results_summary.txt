@@ -1,0 +1,47 @@
+
+MALICIOUS URL CLASSIFIER - RESULTS SUMMARY
+Cyber Carnival 2026 Hackathon
+============================================================
+
+DATASET
+  Total samples : 651,191
+  Classes       : benign, defacement, malware, phishing
+  Distribution  :
+type
+benign        428103
+defacement     96457
+phishing       94111
+malware        32520
+
+SMOTE BALANCING
+  Train samples before SMOTE : 520,952
+  Train samples after  SMOTE : 1,369,928
+  Test set untouched         : 130,239 (original data only)
+
+FEATURE ENGINEERING
+  Total features : 24
+
+MODEL RESULTS (Trained on SMOTE | Tested on Original)
+--------------------------------------------------
+  Random Forest
+    Accuracy  : 0.9453 (94.53%)
+    F1 Score  : 0.9462
+    Train Time: 123.9s
+
+
+BEST MODEL: Random Forest
+  Accuracy : 0.9453 (94.53%)
+  F1 Score : 0.9462
+
+CLASSIFICATION REPORT (Random Forest):
+              precision    recall  f1-score   support
+
+      benign       0.98      0.95      0.97     85621
+  defacement       0.93      0.97      0.95     19292
+     malware       0.97      0.93      0.95      6504
+    phishing       0.81      0.90      0.85     18822
+
+    accuracy                           0.95    130239
+   macro avg       0.92      0.94      0.93    130239
+weighted avg       0.95      0.95      0.95    130239
+
