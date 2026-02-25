@@ -1,0 +1,44 @@
+
+{
+    "0": 1,
+    "1": [
+        24
+    ],
+    "2": {
+        "0": 3,
+        "1": "|",
+        "2": null,
+        "3": null,
+        "4": null,
+        "5": -1,
+        "6": -1,
+        "7": 63
+    },
+    "3": false,
+    "4": [
+        "url_length",
+        "hostname_length",
+        "path_length",
+        "num_dots",
+        "num_hyphens",
+        "num_underscores",
+        "num_slashes",
+        "num_at",
+        "num_question",
+        "num_equals",
+        "num_ampersand",
+        "num_percent",
+        "num_digits",
+        "has_ip",
+        "has_https",
+        "has_www",
+        "has_at_sign",
+        "has_double_slash",
+        "has_hex_encoding",
+        "num_subdomains",
+        "has_suspicious_word",
+        "digit_ratio",
+        "letter_ratio",
+        "special_ratio"
+    ]
+}
