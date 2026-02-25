@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>URL Threat Scanner — Cyber Carnival 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:      #030712;
+  --surf:    #0d1117;
+  --surf2:   #0a0f1a;
+  --border:  #1f2937;
+  --accent:  #00f5c4;
+  --acc2:    #7c3aed;
+  --danger:  #ef4444;
+  --warn:    #f59e0b;
+  --safe:    #10b981;
+  --text:    #e2e8f0;
+  --muted:   #64748b;
+  --glow:    0 0 24px rgba(0,245,196,0.25);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,245,196,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,245,196,0.025) 1px,transparent 1px);
+  background-size:44px 44px;pointer-events:none;z-index:0;
+}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(3,7,18,0.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+}
+.nav-logo{
+  font-family:'Orbitron',monospace;font-size:14px;font-weight:900;
+  color:var(--accent);letter-spacing:3px;
+}
+.nav-tabs{display:flex;gap:4px;}
+.tab-btn{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  letter-spacing:2px;padding:8px 18px;border-radius:2px;
+  border:1px solid transparent;cursor:pointer;
+  background:transparent;color:var(--muted);
+  transition:all 0.2s;
+}
+.tab-btn:hover{color:var(--text);border-color:var(--border);}
+.tab-btn.active{
+  color:var(--accent);border-color:var(--accent);
+  background:rgba(0,245,196,0.07);
+}
+
+/* ── LAYOUT ── */
+.page{display:none;position:relative;z-index:1;}
+.page.active{display:block;}
+.container{max-width:1000px;margin:0 auto;padding:40px 24px 80px;}
+
+/* ── HEADER ── */
+header{text-align:center;margin-bottom:52px;padding-top:20px;}
+.badge{
+  display:inline-block;font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:var(--accent);border:1px solid rgba(0,245,196,0.4);
+  padding:4px 16px;letter-spacing:4px;text-transform:uppercase;
+  margin-bottom:22px;animation:pulse-b 2.5s ease-in-out infinite;
+}
+@keyframes pulse-b{
+  0%,100%{box-shadow:0 0 0 rgba(0,245,196,0.3);}
+  50%{box-shadow:0 0 16px rgba(0,245,196,0.3);}
+}
+h1{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(2rem,6vw,3.8rem);font-weight:900;line-height:1.05;
+  background:linear-gradient(135deg,#fff 30%,var(--accent) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:14px;
+}
+.subtitle{
+  font-family:'Share Tech Mono',monospace;font-size:12px;
+  color:var(--muted);letter-spacing:2px;
+}
+
+/* ── CARD ── */
+.card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:28px 32px;margin-bottom:24px;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  animation:sweep 4s ease-in-out infinite;
+}
+@keyframes sweep{
+  0%{transform:translateX(-100%);opacity:0;}
+  40%,60%{opacity:1;}
+  100%{transform:translateX(100%);opacity:0;}
+}
+
+/* ── INPUT ── */
+.input-label{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--accent);letter-spacing:3px;display:block;margin-bottom:12px;
+}
+.input-row{display:flex;gap:10px;}
+input[type=text]{
+  flex:1;background:var(--surf2);border:1px solid var(--border);
+  border-radius:3px;color:var(--text);
+  font-family:'Share Tech Mono',monospace;font-size:13px;
+  padding:13px 18px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;
+}
+input[type=text]::placeholder{color:var(--muted);}
+input[type=text]:focus{border-color:var(--accent);box-shadow:var(--glow);}
+.btn-primary{
+  background:var(--accent);color:#000;border:none;border-radius:3px;
+  padding:13px 28px;font-family:'Orbitron',monospace;font-size:12px;
+  font-weight:700;letter-spacing:2px;cursor:pointer;
+  transition:all 0.2s;white-space:nowrap;
+}
+.btn-primary:hover{background:#00ddb0;box-shadow:var(--glow);transform:translateY(-1px);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary.loading{pointer-events:none;opacity:0.6;}
+
+/* ── RESULT SPLIT LAYOUT ── */
+#resultCard{display:none;animation:rise 0.4s cubic-bezier(0.22,1,0.36,1);}
+@keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+.result-grid{
+  display:grid;grid-template-columns:1fr 320px;gap:20px;
+  margin-bottom:20px;
+}
+@media(max-width:680px){.result-grid{grid-template-columns:1fr;}}
+
+/* verdict panel */
+.verdict-panel{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:28px;display:flex;flex-direction:column;gap:16px;
+}
+.verdict-top{display:flex;align-items:center;gap:18px;}
+.v-icon{
+  width:60px;height:60px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;flex-shrink:0;border:2px solid;
+}
+.vi-benign    {border-color:var(--safe);  background:rgba(16,185,129,0.1);}
+.vi-phishing  {border-color:var(--danger);background:rgba(239,68,68,0.1);}
+.vi-malware   {border-color:var(--danger);background:rgba(239,68,68,0.1);}
+.vi-defacement{border-color:var(--warn);  background:rgba(245,158,11,0.1);}
+
+.v-verdict{
+  font-family:'Orbitron',monospace;font-size:1.6rem;
+  font-weight:900;letter-spacing:3px;
+}
+.vc-benign    {color:var(--safe);}
+.vc-phishing  {color:var(--danger);}
+.vc-malware   {color:var(--danger);}
+.vc-defacement{color:var(--warn);}
+
+.v-url{
+  font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);
+  word-break:break-all;padding:10px;background:var(--surf2);border-radius:3px;
+  border-left:3px solid var(--border);
+}
+.v-desc{font-size:14px;color:#94a3b8;line-height:1.6;}
+
+/* confidence meter */
+.conf-meter{margin-top:4px;}
+.conf-label{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:2px;margin-bottom:8px;
+}
+.conf-bar-bg{
+  height:6px;background:#1a2233;border-radius:3px;overflow:hidden;
+}
+.conf-bar-fill{
+  height:100%;border-radius:3px;
+  transition:width 1s cubic-bezier(0.22,1,0.36,1);width:0%;
+}
+.conf-value{
+  font-family:'Orbitron',monospace;font-size:11px;
+  color:var(--accent);margin-top:6px;
+}
+
+/* prob bars */
+.prob-section{margin-top:16px;}
+.prob-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.prob-lbl{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  width:96px;flex-shrink:0;letter-spacing:1px;text-transform:uppercase;
+}
+.prob-bg{flex:1;height:7px;background:#1a2233;border-radius:2px;overflow:hidden;}
+.prob-fill{height:100%;border-radius:2px;transition:width 0.9s cubic-bezier(0.22,1,0.36,1);width:0%;}
+.fill-benign    {background:linear-gradient(90deg,#059669,#10b981);}
+.fill-phishing  {background:linear-gradient(90deg,#b91c1c,#ef4444);}
+.fill-malware   {background:linear-gradient(90deg,#b91c1c,#ef4444);}
+.fill-defacement{background:linear-gradient(90deg,#b45309,#f59e0b);}
+.prob-pct{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  width:44px;text-align:right;flex-shrink:0;
+}
+
+/* ── DNA RADAR PANEL ── */
+.dna-panel{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:24px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.dna-title{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--accent);letter-spacing:3px;margin-bottom:16px;align-self:flex-start;
+}
+#radarCanvas{width:100%;max-width:270px;}
+.dna-legend{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;
+  margin-top:16px;width:100%;
+}
+.dna-item{display:flex;align-items:center;gap:8px;}
+.dna-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dna-name{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
+.dna-val{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text);margin-left:auto;}
+
+/* ── FEATURE CHIPS ── */
+.chips-bar{
+  background:var(--surf2);border:1px solid var(--border);
+  border-radius:4px;padding:14px 20px;
+  display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;
+}
+.chip{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  padding:5px 12px;border-radius:2px;letter-spacing:1px;
+  border:1px solid var(--border);color:var(--muted);
+}
+.chip.safe  {border-color:var(--safe);  color:var(--safe);  background:rgba(16,185,129,0.06);}
+.chip.danger{border-color:var(--danger);color:var(--danger);background:rgba(239,68,68,0.06);}
+.chip.warn  {border-color:var(--warn);  color:var(--warn);  background:rgba(245,158,11,0.06);}
+
+/* ── HISTORY ── */
+.section-label{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:3px;margin-bottom:12px;
+}
+.history-list{display:flex;flex-direction:column;gap:7px;}
+.h-item{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:3px;padding:11px 16px;cursor:pointer;
+  transition:border-color 0.2s;animation:rise 0.3s ease;
+}
+.h-item:hover{border-color:var(--accent);}
+.h-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.hd-benign    {background:var(--safe);}
+.hd-phishing  {background:var(--danger);}
+.hd-malware   {background:var(--danger);}
+.hd-defacement{background:var(--warn);}
+.h-url{
+  flex:1;font-family:'Share Tech Mono',monospace;font-size:11px;
+  color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.h-verdict{
+  font-family:'Orbitron',monospace;font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;flex-shrink:0;
+}
+.h-conf{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);flex-shrink:0;
+}
+
+/* ── BULK PAGE ── */
+.bulk-drop{
+  border:2px dashed var(--border);border-radius:4px;
+  padding:48px 32px;text-align:center;cursor:pointer;
+  transition:border-color 0.2s,background 0.2s;margin-bottom:20px;
+}
+.bulk-drop:hover,.bulk-drop.dragover{
+  border-color:var(--accent);background:rgba(0,245,196,0.04);
+}
+.drop-icon{font-size:40px;margin-bottom:12px;}
+.drop-title{
+  font-family:'Orbitron',monospace;font-size:14px;
+  color:var(--text);letter-spacing:2px;margin-bottom:6px;
+}
+.drop-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);}
+
+.bulk-or{
+  text-align:center;font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:var(--muted);letter-spacing:2px;margin:16px 0;
+}
+textarea{
+  width:100%;background:var(--surf2);border:1px solid var(--border);
+  border-radius:3px;color:var(--text);font-family:'Share Tech Mono',monospace;
+  font-size:12px;padding:14px;resize:vertical;min-height:120px;outline:none;
+  transition:border-color 0.2s;
+}
+textarea:focus{border-color:var(--accent);}
+textarea::placeholder{color:var(--muted);}
+.bulk-actions{display:flex;gap:10px;margin-top:14px;}
+.btn-secondary{
+  background:transparent;color:var(--accent);
+  border:1px solid var(--accent);border-radius:3px;
+  padding:11px 22px;font-family:'Share Tech Mono',monospace;
+  font-size:11px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;
+}
+.btn-secondary:hover{background:rgba(0,245,196,0.08);}
+
+/* bulk results */
+#bulkResults{display:none;margin-top:28px;}
+.summary-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;
+}
+@media(max-width:600px){.summary-grid{grid-template-columns:repeat(2,1fr);}}
+.s-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:18px;text-align:center;
+}
+.s-count{
+  font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;
+}
+.s-label{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:2px;margin-top:4px;
+}
+.sc-benign    {color:var(--safe);}
+.sc-phishing  {color:var(--danger);}
+.sc-malware   {color:var(--danger);}
+.sc-defacement{color:var(--warn);}
+
+.bulk-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:4px;}
+table{width:100%;border-collapse:collapse;}
+th{
+  font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;
+  color:var(--muted);background:var(--surf2);
+  padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);
+}
+td{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  padding:11px 16px;border-bottom:1px solid rgba(31,41,55,0.5);
+  vertical-align:middle;
+}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.td-url{max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);}
+.td-badge{
+  display:inline-block;font-size:10px;letter-spacing:1px;
+  padding:3px 10px;border-radius:2px;border:1px solid;font-weight:700;text-transform:uppercase;
+}
+.tb-benign    {color:var(--safe);  border-color:var(--safe);  background:rgba(16,185,129,0.08);}
+.tb-phishing  {color:var(--danger);border-color:var(--danger);background:rgba(239,68,68,0.08);}
+.tb-malware   {color:var(--danger);border-color:var(--danger);background:rgba(239,68,68,0.08);}
+.tb-defacement{color:var(--warn);  border-color:var(--warn);  background:rgba(245,158,11,0.08);}
+
+.export-btn{
+  margin-top:16px;background:transparent;color:var(--accent);
+  border:1px solid var(--accent);border-radius:3px;
+  padding:10px 24px;font-family:'Share Tech Mono',monospace;
+  font-size:11px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;
+}
+.export-btn:hover{background:rgba(0,245,196,0.08);}
+
+/* progress bar for bulk */
+.bulk-progress{display:none;margin-top:16px;}
+.bp-bar-bg{height:4px;background:#1a2233;border-radius:2px;overflow:hidden;}
+.bp-bar-fill{
+  height:100%;background:var(--accent);border-radius:2px;
+  width:0%;transition:width 0.3s ease;
+}
+.bp-text{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);margin-top:8px;letter-spacing:2px;
+}
+
+/* ── ERROR ── */
+.err{
+  display:none;font-family:'Share Tech Mono',monospace;font-size:11px;
+  color:var(--danger);margin-top:10px;padding:10px 14px;
+  background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:3px;
+}
+/* ── LOADER ── */
+.loader{
+  display:inline-block;width:13px;height:13px;
+  border:2px solid rgba(0,0,0,0.3);border-top-color:#000;
+  border-radius:50%;animation:spin 0.6s linear infinite;
+  vertical-align:middle;margin-right:6px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+footer{
+  text-align:center;margin-top:60px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:2px;
+}
+footer span{color:var(--accent);}
+
+/* ══════════════════════════════════
+   DEEP ANALYSIS SECTION
+══════════════════════════════════ */
+#deepAnalysis{display:none;margin-top:20px;animation:rise 0.5s cubic-bezier(0.22,1,0.36,1);}
+
+.deep-header{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:20px;
+}
+.deep-header-line{flex:1;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
+.deep-header-title{
+  font-family:'Orbitron',monospace;font-size:13px;font-weight:900;
+  color:var(--accent);letter-spacing:3px;white-space:nowrap;
+}
+
+/* anatomy breakdown */
+.anatomy-box{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:24px;margin-bottom:16px;
+}
+.anatomy-title{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:3px;margin-bottom:16px;
+}
+.url-anatomy{
+  font-family:'Share Tech Mono',monospace;font-size:13px;
+  line-height:2.2;word-break:break-all;
+  background:var(--surf2);border-radius:3px;
+  padding:16px;border:1px solid var(--border);
+  margin-bottom:16px;
+}
+.url-part{
+  display:inline;padding:2px 6px;border-radius:3px;
+  cursor:default;position:relative;
+}
+.up-scheme  {background:rgba(16,185,129,0.18); color:#34d399;}
+.up-subdomain{background:rgba(245,158,11,0.18);color:#fbbf24;}
+.up-domain  {background:rgba(99,102,241,0.2);  color:#a5b4fc;}
+.up-tld     {background:rgba(239,68,68,0.15);  color:#f87171;}
+.up-path    {background:rgba(6,182,212,0.15);  color:#67e8f9;}
+.up-params  {background:rgba(168,85,247,0.15); color:#d8b4fe;}
+
+.anatomy-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+.al-item{
+  display:flex;align-items:center;gap:7px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);
+}
+.al-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* 3-col deep grid */
+.deep-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+@media(max-width:700px){.deep-grid-3{grid-template-columns:1fr;}}
+
+.deep-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+@media(max-width:600px){.deep-grid-2{grid-template-columns:1fr;}}
+
+/* stat card */
+.stat-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:18px;text-align:center;
+}
+.stat-value{
+  font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;
+  line-height:1;
+}
+.stat-label{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--muted);letter-spacing:2px;margin-top:6px;
+}
+.stat-sub{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  margin-top:4px;
+}
+
+/* char distribution bar chart */
+.chart-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:22px;margin-bottom:16px;
+}
+.chart-title{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:3px;margin-bottom:18px;
+}
+.bar-chart{display:flex;flex-direction:column;gap:10px;}
+.bc-row{display:flex;align-items:center;gap:12px;}
+.bc-label{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);width:110px;flex-shrink:0;text-align:right;
+}
+.bc-track{flex:1;height:20px;background:var(--surf2);border-radius:2px;overflow:hidden;position:relative;}
+.bc-fill{
+  height:100%;border-radius:2px;
+  transition:width 1s cubic-bezier(0.22,1,0.36,1);width:0%;
+  display:flex;align-items:center;padding-left:8px;
+}
+.bc-val{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,0.8);white-space:nowrap;
+}
+.bc-num{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);width:28px;text-align:right;flex-shrink:0;
+}
+
+/* risk signals table */
+.signals-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;margin-bottom:16px;
+}
+.sig-header{
+  display:grid;grid-template-columns:2fr 1fr 3fr;
+  background:var(--surf2);padding:10px 18px;
+  border-bottom:1px solid var(--border);
+}
+.sig-hcell{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--muted);letter-spacing:2px;
+}
+.sig-row{
+  display:grid;grid-template-columns:2fr 1fr 3fr;
+  padding:11px 18px;border-bottom:1px solid rgba(31,41,55,0.5);
+  align-items:center;transition:background 0.15s;
+}
+.sig-row:last-child{border-bottom:none;}
+.sig-row:hover{background:rgba(255,255,255,0.02);}
+.sig-name{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);}
+.sig-status{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;}
+.sig-found {color:var(--danger);}
+.sig-clean {color:var(--safe);}
+.sig-warn  {color:var(--warn);}
+.sig-note{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);}
+
+/* risk score gauge */
+.gauge-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:24px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.gauge-title{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:3px;margin-bottom:16px;align-self:flex-start;
+}
+.gauge-wrap{position:relative;width:180px;height:100px;margin-bottom:12px;}
+#gaugeCanvas{width:180px;height:100px;}
+.gauge-score-label{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  text-align:center;
+}
+.gauge-score-val{
+  font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;
+}
+.gauge-score-sub{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--muted);letter-spacing:2px;
+}
+.gauge-ticks{
+  display:flex;justify-content:space-between;width:180px;
+  font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);
+}
+.risk-level{
+  font-family:'Orbitron',monospace;font-size:12px;font-weight:700;
+  letter-spacing:2px;margin-top:8px;
+}
+
+/* recommendations */
+.reco-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:4px;padding:22px;margin-bottom:16px;
+}
+.reco-title{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:3px;margin-bottom:14px;
+}
+.reco-item{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:12px 0;border-bottom:1px solid rgba(31,41,55,0.5);
+}
+.reco-item:last-child{border-bottom:none;}
+.reco-icon{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;border:1px solid;
+}
+.ri-danger{border-color:var(--danger);background:rgba(239,68,68,0.1);}
+.ri-warn  {border-color:var(--warn);  background:rgba(245,158,11,0.1);}
+.ri-safe  {border-color:var(--safe);  background:rgba(16,185,129,0.1);}
+.reco-text{}
+.reco-head{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.reco-body{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">⬡ THREATSCANNER</div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('single')"> SINGLE SCAN</button>
+    <button class="tab-btn"        onclick="switchTab('bulk')"  > BULK SCAN</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════ SINGLE SCAN PAGE ════════════════════════════════ -->
+<div class="page active" id="page-single">
+<div class="container">
+
+  <header>
+    <div class="badge">Cyber Carnival 2026</div>
+    <h1>URL THREAT<br>SCANNER</h1>
+    <p class="subtitle"> ML-powered malicious URL detection + DNA fingerprinting</p>
+  </header>
+
+  <!-- INPUT -->
+  <div class="card">
+    <label class="input-label"> Target URL</label>
+    <div class="input-row">
+      <input type="text" id="urlInput" placeholder="paypal-secure-login.com/verify" autocomplete="off" spellcheck="false"/>
+      <button class="btn-primary" id="scanBtn" onclick="scan()">SCAN</button>
+    </div>
+    <div class="err" id="errMsg"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="resultCard">
+
+    <!-- TOP GRID: verdict + DNA radar -->
+    <div class="result-grid">
+
+      <!-- Verdict Panel -->
+      <div class="verdict-panel">
+        <div class="verdict-top">
+          <div class="v-icon" id="vIcon"></div>
+          <div>
+            <div class="v-verdict" id="vVerdict"></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="vSub"></div>
+          </div>
+        </div>
+        <div class="v-url" id="vUrl"></div>
+        <div class="v-desc" id="vDesc"></div>
+
+        <div class="conf-meter">
+          <div class="conf-label"> MODEL CONFIDENCE</div>
+          <div class="conf-bar-bg">
+            <div class="conf-bar-fill" id="confFill" style="width:0%"></div>
+          </div>
+          <div class="conf-value" id="confVal"></div>
+        </div>
+
+        <div class="prob-section">
+          <div class="input-label" style="margin-bottom:10px;"> CLASS PROBABILITIES</div>
+          <div id="probBars"></div>
+        </div>
+      </div>
+
+      <!-- DNA Radar Panel -->
+      <div class="dna-panel">
+        <div class="dna-title"> THREAT DNA FINGERPRINT</div>
+        <canvas id="radarCanvas" width="270" height="270"></canvas>
+        <div class="dna-legend" id="dnaLegend"></div>
+      </div>
+    </div>
+
+    <!-- FEATURE CHIPS -->
+    <div class="chips-bar" id="chipsBar"></div>
+
+    <!-- ═══ DEEP ANALYSIS ═══ -->
+    <div id="deepAnalysis">
+
+      <div class="deep-header">
+        <div class="deep-header-line"></div>
+        <div class="deep-header-title">⬡ DEEP URL ANALYSIS</div>
+        <div class="deep-header-line" style="background:linear-gradient(90deg,transparent,var(--accent));"></div>
+      </div>
+
+      <!-- URL ANATOMY -->
+      <div class="anatomy-box">
+        <div class="anatomy-title"> URL ANATOMY BREAKDOWN</div>
+        <div class="url-anatomy" id="urlAnatomy"></div>
+        <div class="anatomy-legend">
+          <div class="al-item"><span class="al-dot" style="background:#34d399"></span>Scheme</div>
+          <div class="al-item"><span class="al-dot" style="background:#fbbf24"></span>Subdomain</div>
+          <div class="al-item"><span class="al-dot" style="background:#a5b4fc"></span>Domain</div>
+          <div class="al-item"><span class="al-dot" style="background:#f87171"></span>TLD</div>
+          <div class="al-item"><span class="al-dot" style="background:#67e8f9"></span>Path</div>
+          <div class="al-item"><span class="al-dot" style="background:#d8b4fe"></span>Parameters</div>
+        </div>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="deep-grid-3" id="statCards"></div>
+
+      <!-- GAUGE + CHAR CHART -->
+      <div class="deep-grid-2">
+        <!-- Risk Score Gauge -->
+        <div class="gauge-card">
+          <div class="gauge-title"> OVERALL RISK SCORE</div>
+          <div class="gauge-wrap">
+            <canvas id="gaugeCanvas" width="180" height="100"></canvas>
+            <div class="gauge-score-label">
+              <div class="gauge-score-val" id="gaugeVal">0</div>
+              <div class="gauge-score-sub">/ 100</div>
+            </div>
+          </div>
+          <div class="gauge-ticks"><span>LOW</span><span>MED</span><span>HIGH</span></div>
+          <div class="risk-level" id="riskLevel"></div>
+        </div>
+
+        <!-- Char Distribution -->
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="chart-title"> CHARACTER COMPOSITION</div>
+          <div class="bar-chart" id="charChart"></div>
+        </div>
+      </div>
+
+      <!-- RISK SIGNALS TABLE -->
+      <div class="signals-card">
+        <div class="sig-header">
+          <span class="sig-hcell">SIGNAL</span>
+          <span class="sig-hcell">STATUS</span>
+          <span class="sig-hcell">ANALYSIS</span>
+        </div>
+        <div id="signalsTable"></div>
+      </div>
+
+      <!-- RECOMMENDATIONS -->
+      <div class="reco-card">
+        <div class="reco-title"> SECURITY RECOMMENDATIONS</div>
+        <div id="recoList"></div>
+      </div>
+
+    </div><!-- /deepAnalysis -->
+
+    <!-- HISTORY -->
+    <div id="historySection" style="display:none">
+      <div class="section-label"> SCAN HISTORY</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
+  </div><!-- /resultCard -->
+
+  <footer style="margin-top:40px;">
+    POWERED BY <span>RANDOM FOREST + SMOTE</span> &nbsp;|&nbsp;
+    DNA FINGERPRINT <span>RADAR</span> &nbsp;|&nbsp; CYBER CARNIVAL 2026
+  </footer>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════ BULK SCAN PAGE ════════════════════════════════ -->
+<div class="page" id="page-bulk">
+<div class="container">
+
+  <header>
+    <div class="badge">Bulk Mode</div>
+    <h1>BULK<br>SCANNER</h1>
+    <p class="subtitle"> Scan up to 500 URLs at once — CSV upload or paste</p>
+  </header>
+
+  <div class="card">
+    <!-- Drop Zone -->
+    <div class="bulk-drop" id="dropZone"
+         onclick="document.getElementById('csvFile').click()"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">DROP CSV FILE HERE</div>
+      <div class="drop-sub">or click to browse — one URL per row</div>
+    </div>
+    <input type="file" id="csvFile" accept=".csv,.txt" style="display:none" onchange="loadFile(event)"/>
+
+    <div class="bulk-or">── OR PASTE URLS ──</div>
+
+    <label class="input-label"> URLs (one per line)</label>
+    <textarea id="bulkInput" placeholder="google.com&#10;paypal-secure-login.com&#10;free-crack-download.net&#10;..."></textarea>
+
+    <div class="bulk-actions">
+      <button class="btn-primary" onclick="bulkScan()">RUN BULK SCAN</button>
+      <button class="btn-secondary" onclick="loadSampleURLs()">LOAD SAMPLES</button>
+      <button class="btn-secondary" onclick="clearBulk()">CLEAR</button>
+    </div>
+
+    <div class="bulk-progress" id="bulkProgress">
+      <div class="bp-bar-bg"><div class="bp-bar-fill" id="bpFill"></div></div>
+      <div class="bp-text" id="bpText">SCANNING...</div>
+    </div>
+    <div class="err" id="bulkErr"></div>
+  </div>
+
+  <!-- BULK RESULTS -->
+  <div id="bulkResults">
+    <div class="section-label"> SCAN SUMMARY</div>
+    <div class="summary-grid" id="summaryGrid"></div>
+
+    <div class="section-label"> DETAILED RESULTS</div>
+    <div class="bulk-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>URL</th>
+            <th>VERDICT</th>
+            <th>CONFIDENCE</th>
+            <th>BENIGN</th>
+            <th>PHISHING</th>
+            <th>MALWARE</th>
+            <th>DEFACEMENT</th>
+          </tr>
+        </thead>
+        <tbody id="bulkTableBody"></tbody>
+      </table>
+    </div>
+    <button class="export-btn" onclick="exportCSV()">⬇ EXPORT RESULTS AS CSV</button>
+  </div>
+
+  <footer>BULK SCANNER &nbsp;|&nbsp; <span>CYBER CARNIVAL 2026</span></footer>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+//  SINGLE SCAN
+// ═══════════════════════════════════════════
+const DESCRIPTIONS = {
+  benign:     'This URL appears safe and legitimate. No significant threat signals detected.',
+  phishing:   '⚠ This URL shows strong signs of a phishing attack targeting your credentials.',
+  malware:    '☠ Danger! This URL is likely distributing malicious software.',
+  defacement: '⚡ This URL may be a hacked or defaced website.',
+};
+const ICONS   = { benign:'✓', phishing:'⚠', malware:'☠', defacement:'⚡' };
+const CONF_COLORS = { benign:'#10b981', phishing:'#ef4444', malware:'#ef4444', defacement:'#f59e0b' };
+
+let scanHistory = [];
+let bulkData    = [];
+
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') scan();
+});
+
+async function scan() {
+  const url   = document.getElementById('urlInput').value.trim();
+  const btn   = document.getElementById('scanBtn');
+  const errEl = document.getElementById('errMsg');
+  errEl.style.display = 'none';
+
+  if (!url) { showErr(errEl, 'Please enter a URL.'); return; }
+
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="loader"></span>SCANNING';
+
+  try {
+    const res  = await fetch('/predict', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (data.error) { showErr(errEl, data.error); return; }
+    renderResult(data);
+    addHistory(data);
+  } catch(e) {
+    showErr(errEl, 'Cannot connect to Flask server. Run: python app.py');
+  } finally {
+    btn.classList.remove('loading');
+    btn.innerHTML = 'SCAN';
+  }
+}
+
+function renderResult(data) {
+  const pred  = data.prediction;
+  const probs = data.probabilities;
+  const conf  = data.confidence;
+  const dna   = data.dna;
+
+  // icon
+  document.getElementById('vIcon').className    = `v-icon vi-${pred}`;
+  document.getElementById('vIcon').textContent  = ICONS[pred];
+  // verdict
+  const vv = document.getElementById('vVerdict');
+  vv.className   = `v-verdict vc-${pred}`;
+  vv.textContent = pred.toUpperCase();
+  document.getElementById('vSub').textContent  = `Confidence: ${conf}%`;
+  document.getElementById('vUrl').textContent  = data.url;
+  document.getElementById('vDesc').textContent = DESCRIPTIONS[pred];
+
+  // confidence bar
+  const cf = document.getElementById('confFill');
+  cf.style.background = CONF_COLORS[pred];
+  document.getElementById('confVal').textContent = conf + '%';
+  setTimeout(() => { cf.style.width = conf + '%'; }, 50);
+
+  // prob bars
+  const pbEl = document.getElementById('probBars');
+  pbEl.innerHTML = '';
+  Object.entries(probs).sort((a,b)=>b[1]-a[1]).forEach(([cls,prob]) => {
+    const pct = (prob*100).toFixed(1);
+    pbEl.innerHTML += `
+      <div class="prob-row">
+        <span class="prob-lbl">${cls}</span>
+        <div class="prob-bg"><div class="prob-fill fill-${cls}" style="width:0%" data-t="${pct}"></div></div>
+        <span class="prob-pct">${pct}%</span>
+      </div>`;
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.prob-fill').forEach(el => { el.style.width = el.dataset.t + '%'; });
+  }, 80);
+
+  // DNA radar
+  drawRadar(dna, pred);
+
+  // feature chips
+  const url = data.url;
+  const chips = [
+    { label:'HTTPS',         cls: url.startsWith('https') ? 'safe' : 'danger' },
+    { label:'IP IN URL',     cls: /\d{1,3}(\.\d{1,3}){3}/.test(url) ? 'danger' : '' },
+    { label:'SUSPICIOUS KW', cls: /login|secure|account|verify|paypal|bank|signin|update|confirm|admin|password/i.test(url) ? 'danger' : '' },
+    { label:'HAS @ SIGN',    cls: url.includes('@') ? 'danger' : '' },
+    { label:'HEX ENCODED',   cls: url.includes('%') ? 'warn' : '' },
+    { label:'DOUBLE SLASH',  cls: url.slice(7).includes('//') ? 'danger' : '' },
+    { label:'LONG URL',      cls: url.length > 75 ? 'warn' : '' },
+    { label:'MANY HYPHENS',  cls: (url.match(/-/g)||[]).length > 3 ? 'warn' : '' },
+    { label:'WWW',           cls: url.includes('www.') ? '' : '' },
+  ].filter(c => c.cls !== undefined);
+
+  document.getElementById('chipsBar').innerHTML = chips.map(c =>
+    `<span class="chip ${c.cls}">${c.label}</span>`).join('');
+
+  document.getElementById('resultCard').style.display = 'block';
+
+  // Deep analysis
+  renderDeepAnalysis(data);
+
+  document.getElementById('resultCard').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ═══════════════════════════════════════════
+//  RADAR / DNA CHART
+// ═══════════════════════════════════════════
+function drawRadar(dna, pred) {
+  const canvas = document.getElementById('radarCanvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, R = Math.min(W,H)/2 - 36;
+
+  ctx.clearRect(0,0,W,H);
+
+  const labels = Object.keys(dna);
+  const values = Object.values(dna);
+  const N      = labels.length;
+  const step   = (2 * Math.PI) / N;
+  const colors = { benign:'#10b981', phishing:'#ef4444', malware:'#ef4444', defacement:'#f59e0b' };
+  const col    = colors[pred] || '#00f5c4';
+
+  // Draw rings
+  for (let r = 1; r <= 4; r++) {
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+      const ang = i * step - Math.PI/2;
+      const rr  = R * (r/4);
+      const x   = cx + rr * Math.cos(ang);
+      const y   = cy + rr * Math.sin(ang);
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth   = 1;
+    ctx.stroke();
+  }
+
+  // Draw spokes
+  for (let i = 0; i < N; i++) {
+    const ang = i * step - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + R * Math.cos(ang), cy + R * Math.sin(ang));
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth   = 1;
+    ctx.stroke();
+  }
+
+  // Draw data polygon
+  ctx.beginPath();
+  for (let i = 0; i < N; i++) {
+    const ang = i * step - Math.PI/2;
+    const rv  = R * values[i];
+    const x   = cx + rv * Math.cos(ang);
+    const y   = cy + rv * Math.sin(ang);
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fillStyle   = col + '28';
+  ctx.strokeStyle = col;
+  ctx.lineWidth   = 2;
+  ctx.fill();
+  ctx.stroke();
+
+  // Draw dots
+  for (let i = 0; i < N; i++) {
+    const ang = i * step - Math.PI/2;
+    const rv  = R * values[i];
+    const x   = cx + rv * Math.cos(ang);
+    const y   = cy + rv * Math.sin(ang);
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, 2*Math.PI);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = '#030712';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Labels
+  ctx.font      = '9px Share Tech Mono';
+  ctx.fillStyle = '#64748b';
+  ctx.textAlign = 'center';
+  for (let i = 0; i < N; i++) {
+    const ang  = i * step - Math.PI/2;
+    const lr   = R + 22;
+    const x    = cx + lr * Math.cos(ang);
+    const y    = cy + lr * Math.sin(ang) + 4;
+    const lbl  = labels[i].toUpperCase();
+    ctx.fillText(lbl.length > 10 ? lbl.slice(0,9)+'.' : lbl, x, y);
+  }
+
+  // Legend
+  const legend = document.getElementById('dnaLegend');
+  legend.innerHTML = labels.map((lbl, i) => {
+    const pct = Math.round(values[i]*100);
+    const c   = pct > 60 ? col : pct > 30 ? '#f59e0b' : '#64748b';
+    return `
+      <div class="dna-item">
+        <span class="dna-dot" style="background:${c}"></span>
+        <span class="dna-name">${lbl.slice(0,12)}</span>
+        <span class="dna-val" style="color:${c}">${pct}%</span>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  HISTORY
+// ═══════════════════════════════════════════
+function addHistory(data) {
+  scanHistory.unshift(data);
+  if (scanHistory.length > 10) scanHistory.pop();
+  const sec  = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+  sec.style.display = 'block';
+  list.innerHTML = scanHistory.map((item,i) => `
+    <div class="h-item" onclick="loadHist(${i})">
+      <span class="h-dot hd-${item.prediction}"></span>
+      <span class="h-url">${item.url}</span>
+      <span class="h-verdict vc-${item.prediction}">${item.prediction}</span>
+      <span class="h-conf">${item.confidence}%</span>
+    </div>`).join('');
+}
+
+function loadHist(i) {
+  document.getElementById('urlInput').value = scanHistory[i].url;
+  renderResult(scanHistory[i]);
+}
+
+// ═══════════════════════════════════════════
+//  BULK SCAN
+// ═══════════════════════════════════════════
+function loadSampleURLs() {
+  document.getElementById('bulkInput').value =
+`google.com
+github.com
+wikipedia.org
+stackoverflow.com
+paypal-secure-login.com/verify
+apple-id-account-update.com/signin
+bank-of-america-secure-update.net
+free-download-crack-software.com/setup.exe
+keygen-generator-free.net/patch.exe
+hacked-by-anonymous.org
+defaced-by-lulzsec.net
+secure-ebay-account-verify.com
+amazon-account-login-confirm.net
+malware-bytes-free-crack.net/setup.zip
+youtube.com`;
+}
+
+function clearBulk() {
+  document.getElementById('bulkInput').value = '';
+  document.getElementById('bulkResults').style.display = 'none';
+  bulkData = [];
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('dragover');
+}
+function dragLeave(e) {
+  document.getElementById('dropZone').classList.remove('dragover');
+}
+function dropFile(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) readFile(file);
+}
+function loadFile(e) {
+  const file = e.target.files[0];
+  if (file) readFile(file);
+}
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('bulkInput').value = ev.target.result;
+  };
+  reader.readAsText(file);
+}
+
+async function bulkScan() {
+  const raw  = document.getElementById('bulkInput').value.trim();
+  const errEl= document.getElementById('bulkErr');
+  errEl.style.display = 'none';
+
+  if (!raw) { showErr(errEl, 'Please enter URLs or upload a CSV.'); return; }
+
+  const urls = raw.split('\n').map(u => u.trim()).filter(Boolean);
+  if (urls.length === 0) { showErr(errEl, 'No valid URLs found.'); return; }
+  if (urls.length > 500) { showErr(errEl, 'Maximum 500 URLs per scan.'); return; }
+
+  // Show progress
+  const prog  = document.getElementById('bulkProgress');
+  const bpFil = document.getElementById('bpFill');
+  const bpTxt = document.getElementById('bpText');
+  prog.style.display = 'block';
+  bpFil.style.width  = '0%';
+  bpTxt.textContent  = `SCANNING ${urls.length} URLs...`;
+
+  // Animate progress
+  let fakeP = 0;
+  const fakeInter = setInterval(() => {
+    fakeP = Math.min(fakeP + 3, 88);
+    bpFil.style.width = fakeP + '%';
+  }, 100);
+
+  try {
+    const res  = await fetch('/bulk', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ urls })
+    });
+    const data = await res.json();
+    clearInterval(fakeInter);
+
+    if (data.error) { showErr(errEl, data.error); prog.style.display='none'; return; }
+
+    bpFil.style.width = '100%';
+    bpTxt.textContent = `COMPLETE — ${data.total} URLs scanned`;
+
+    setTimeout(() => { prog.style.display='none'; }, 1500);
+    bulkData = data.results;
+    renderBulkResults(data);
+
+  } catch(e) {
+    clearInterval(fakeInter);
+    prog.style.display = 'none';
+    showErr(errEl, 'Cannot connect to Flask server. Run: python app.py');
+  }
+}
+
+function renderBulkResults(data) {
+  const resultsEl = document.getElementById('bulkResults');
+  resultsEl.style.display = 'block';
+
+  // Summary cards
+  const classes = ['benign','phishing','malware','defacement'];
+  document.getElementById('summaryGrid').innerHTML = classes.map(cls => `
+    <div class="s-card">
+      <div class="s-count sc-${cls}">${data.summary[cls] || 0}</div>
+      <div class="s-label">${cls.toUpperCase()}</div>
+    </div>`).join('') +
+    `<div class="s-card">
+      <div class="s-count" style="color:var(--text)">${data.total}</div>
+      <div class="s-label">TOTAL</div>
+    </div>`;
+
+  // Table
+  const tbody = document.getElementById('bulkTableBody');
+  tbody.innerHTML = data.results.map((r,i) => `
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td class="td-url" title="${r.url}">${r.url}</td>
+      <td><span class="td-badge tb-${r.prediction}">${r.prediction}</span></td>
+      <td style="color:var(--text)">${r.confidence}%</td>
+      <td style="color:var(--safe)">${(r.probabilities.benign*100).toFixed(1)}%</td>
+      <td style="color:var(--danger)">${(r.probabilities.phishing*100).toFixed(1)}%</td>
+      <td style="color:var(--danger)">${(r.probabilities.malware*100).toFixed(1)}%</td>
+      <td style="color:var(--warn)">${(r.probabilities.defacement*100).toFixed(1)}%</td>
+    </tr>`).join('');
+
+  resultsEl.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function exportCSV() {
+  if (!bulkData.length) return;
+  const rows = [
+    ['#','URL','Verdict','Confidence','Benign%','Phishing%','Malware%','Defacement%'],
+    ...bulkData.map((r,i) => [
+      i+1, r.url, r.prediction, r.confidence + '%',
+      (r.probabilities.benign*100).toFixed(1)+'%',
+      (r.probabilities.phishing*100).toFixed(1)+'%',
+      (r.probabilities.malware*100).toFixed(1)+'%',
+      (r.probabilities.defacement*100).toFixed(1)+'%',
+    ])
+  ];
+  const csv  = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'threat_scan_results.csv';
+  a.click();
+}
+
+function showErr(el, msg) {
+  el.textContent    = '// ERROR: ' + msg;
+  el.style.display  = 'block';
+}
+
+// ═══════════════════════════════════════════
+//  DEEP ANALYSIS
+// ═══════════════════════════════════════════
+function renderDeepAnalysis(data) {
+  const url  = data.url;
+  const pred = data.prediction;
+  const probs= data.probabilities;
+
+  document.getElementById('deepAnalysis').style.display = 'block';
+
+  // ── Parse URL parts ──
+  let scheme='', subdomain='', domain='', tld='', path='', params='';
+  try {
+    const full   = url.startsWith('http') ? url : 'http://' + url;
+    const parsed = new URL(full);
+    scheme       = parsed.protocol.replace(':','');
+    const parts  = (parsed.hostname || '').split('.');
+    tld          = parts.length > 1 ? parts.pop() : '';
+    domain       = parts.length > 0 ? parts.pop() : '';
+    subdomain    = parts.join('.');
+    path         = parsed.pathname !== '/' ? parsed.pathname : '';
+    params       = parsed.search;
+  } catch(e) {}
+
+  // ── URL Anatomy ──
+  let anatomyHtml = '';
+  if (scheme)    anatomyHtml += `<span class="url-part up-scheme"   title="Scheme">${scheme}://</span>`;
+  if (subdomain) anatomyHtml += `<span class="url-part up-subdomain" title="Subdomain">${subdomain}.</span>`;
+  if (domain)    anatomyHtml += `<span class="url-part up-domain"   title="Domain">${domain}</span>`;
+  if (tld)       anatomyHtml += `<span class="url-part up-tld"      title="TLD">.${tld}</span>`;
+  if (path)      anatomyHtml += `<span class="url-part up-path"     title="Path">${path}</span>`;
+  if (params)    anatomyHtml += `<span class="url-part up-params"   title="Parameters">${params}</span>`;
+  document.getElementById('urlAnatomy').innerHTML = anatomyHtml || `<span style="color:var(--muted)">${url}</span>`;
+
+  // ── Char counts ──
+  const letters = (url.match(/[a-zA-Z]/g)||[]).length;
+  const digits  = (url.match(/[0-9]/g)||[]).length;
+  const hyphens = (url.match(/-/g)||[]).length;
+  const dots    = (url.match(/\./g)||[]).length;
+  const specials= url.length - letters - digits;
+  const entropy = calcEntropy(url);
+
+  // ── Stat Cards ──
+  const riskScore = calcRiskScore(url, pred, probs);
+  const stats = [
+    { val: url.length,           label:'URL LENGTH',      sub: url.length > 75 ? '⚠ LONG' : '✓ NORMAL',    col: url.length > 75 ? 'var(--warn)' : 'var(--safe)' },
+    { val: entropy.toFixed(2),   label:'ENTROPY BITS',    sub: entropy > 4 ? '⚠ HIGH ENTROPY' : '✓ NORMAL', col: entropy > 4 ? 'var(--warn)' : 'var(--safe)'    },
+    { val: dots,                 label:'DOT COUNT',       sub: dots > 4 ? '⚠ SUSPICIOUS' : '✓ NORMAL',      col: dots > 4 ? 'var(--warn)' : 'var(--safe)'        },
+    { val: hyphens,              label:'HYPHEN COUNT',    sub: hyphens > 3 ? '⚠ SUSPICIOUS' : '✓ NORMAL',   col: hyphens > 3 ? 'var(--warn)' : 'var(--safe)'     },
+    { val: specials,             label:'SPECIAL CHARS',   sub: specials > 10 ? '⚠ HIGH' : '✓ NORMAL',       col: specials > 10 ? 'var(--danger)' : 'var(--safe)'  },
+    { val: subdomain.split('.').filter(Boolean).length || 0, label:'SUBDOMAINS', sub: (subdomain.split('.').filter(Boolean).length||0) > 2 ? '⚠ DEEP' : '✓ NORMAL', col: (subdomain.split('.').filter(Boolean).length||0) > 2 ? 'var(--warn)' : 'var(--safe)' },
+  ];
+  document.getElementById('statCards').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-value" style="color:${s.col}">${s.val}</div>
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-sub" style="color:${s.col}">${s.sub}</div>
+    </div>`).join('');
+
+  // ── Gauge ──
+  drawGauge(riskScore, pred);
+  document.getElementById('gaugeVal').textContent = riskScore;
+  const levels = [
+    { t:80, label:'CRITICAL', col:'#ef4444' },
+    { t:60, label:'HIGH',     col:'#f59e0b' },
+    { t:40, label:'MEDIUM',   col:'#f59e0b' },
+    { t:20, label:'LOW',      col:'#10b981' },
+    { t: 0, label:'MINIMAL',  col:'#10b981' },
+  ];
+  const lv = levels.find(l => riskScore >= l.t) || levels[levels.length-1];
+  const rl = document.getElementById('riskLevel');
+  rl.textContent  = lv.label + ' RISK';
+  rl.style.color  = lv.col;
+
+  // ── Char Chart ──
+  const total = url.length || 1;
+  const chartRows = [
+    { label:'Letters',  count: letters, pct: letters/total*100, color:'#6366f1' },
+    { label:'Digits',   count: digits,  pct: digits/total*100,  color:'#f59e0b' },
+    { label:'Hyphens',  count: hyphens, pct: hyphens/total*100, color:'#ef4444' },
+    { label:'Dots',     count: dots,    pct: dots/total*100,    color:'#10b981' },
+    { label:'Others',   count: specials-hyphens-dots, pct: Math.max(0,(specials-hyphens-dots)/total*100), color:'#8b5cf6' },
+  ];
+  document.getElementById('charChart').innerHTML = chartRows.map(r => `
+    <div class="bc-row">
+      <span class="bc-label">${r.label}</span>
+      <div class="bc-track">
+        <div class="bc-fill" style="width:0%;background:${r.color}22;border-left:3px solid ${r.color}" data-target="${r.pct.toFixed(1)}">
+          <span class="bc-val" style="color:${r.color}">${r.pct.toFixed(1)}%</span>
+        </div>
+      </div>
+      <span class="bc-num">${r.count}</span>
+    </div>`).join('');
+  setTimeout(() => {
+    document.querySelectorAll('.bc-fill').forEach(el => { el.style.width = el.dataset.target + '%'; });
+  }, 100);
+
+  // ── Signals Table ──
+  const signals = [
+    {
+      name: 'HTTPS Protocol',
+      found: url.startsWith('https'),
+      status: url.startsWith('https') ? 'SECURE' : 'MISSING',
+      cls: url.startsWith('https') ? 'sig-clean' : 'sig-found',
+      note: url.startsWith('https') ? 'Encrypted connection — reduces interception risk.' : 'No SSL/TLS — data transmitted in plaintext. Phishing sites often skip HTTPS.',
+    },
+    {
+      name: 'IP Address in URL',
+      found: /\d{1,3}(\.\d{1,3}){3}/.test(url),
+      status: /\d{1,3}(\.\d{1,3}){3}/.test(url) ? 'DETECTED' : 'CLEAN',
+      cls: /\d{1,3}(\.\d{1,3}){3}/.test(url) ? 'sig-found' : 'sig-clean',
+      note: /\d{1,3}(\.\d{1,3}){3}/.test(url) ? 'Raw IP in URL bypasses domain trust. Highly suspicious.' : 'No raw IP address detected in URL.',
+    },
+    {
+      name: 'Suspicious Keywords',
+      found: /login|secure|account|verify|paypal|bank|signin|update|confirm|admin|password/i.test(url),
+      status: /login|secure|account|verify|paypal|bank|signin|update|confirm|admin|password/i.test(url) ? 'DETECTED' : 'CLEAN',
+      cls: /login|secure|account|verify|paypal|bank|signin|update|confirm|admin|password/i.test(url) ? 'sig-found' : 'sig-clean',
+      note: /login|secure|account|verify|paypal|bank|signin|update|confirm|admin|password/i.test(url) ? 'Keywords like login/verify/secure are classic phishing bait words.' : 'No credential-harvesting keywords detected.',
+    },
+    {
+      name: '@ Symbol',
+      found: url.includes('@'),
+      status: url.includes('@') ? 'DETECTED' : 'CLEAN',
+      cls: url.includes('@') ? 'sig-found' : 'sig-clean',
+      note: url.includes('@') ? '@ in URL tricks browsers into ignoring everything before it. Deceptive tactic.' : 'No @ symbol abuse detected.',
+    },
+    {
+      name: 'Hex / URL Encoding',
+      found: url.includes('%'),
+      status: url.includes('%') ? 'DETECTED' : 'CLEAN',
+      cls: url.includes('%') ? 'sig-warn' : 'sig-clean',
+      note: url.includes('%') ? 'Percent-encoding can hide malicious content from basic scanners.' : 'No suspicious encoding found.',
+    },
+    {
+      name: 'Double Slash Redirect',
+      found: url.slice(7).includes('//'),
+      status: url.slice(7).includes('//') ? 'DETECTED' : 'CLEAN',
+      cls: url.slice(7).includes('//') ? 'sig-found' : 'sig-clean',
+      note: url.slice(7).includes('//') ? 'Double slashes after domain can indicate open redirect abuse.' : 'No redirect manipulation detected.',
+    },
+    {
+      name: 'URL Length',
+      found: url.length > 75,
+      status: url.length > 75 ? `LONG (${url.length})` : `NORMAL (${url.length})`,
+      cls: url.length > 75 ? 'sig-warn' : 'sig-clean',
+      note: url.length > 75 ? 'Unusually long URLs are used to hide the true destination domain.' : 'URL length is within normal range.',
+    },
+    {
+      name: 'Excessive Hyphens',
+      found: hyphens > 3,
+      status: hyphens > 3 ? `${hyphens} HYPHENS` : `${hyphens} HYPHENS`,
+      cls: hyphens > 3 ? 'sig-found' : 'sig-clean',
+      note: hyphens > 3 ? 'Many hyphens often indicate typosquatting or fake domain mimicry (e.g. pay-pal-login.com).' : 'Hyphen usage is within acceptable range.',
+    },
+    {
+      name: 'Subdomain Depth',
+      found: (subdomain.split('.').filter(Boolean).length||0) > 2,
+      status: (subdomain.split('.').filter(Boolean).length||0) > 2 ? 'DEEP NESTING' : 'NORMAL',
+      cls: (subdomain.split('.').filter(Boolean).length||0) > 2 ? 'sig-warn' : 'sig-clean',
+      note: (subdomain.split('.').filter(Boolean).length||0) > 2 ? 'Deep subdomain nesting can mask the real domain owner and trick visual inspection.' : 'Subdomain depth is normal.',
+    },
+  ];
+
+  document.getElementById('signalsTable').innerHTML = signals.map(s => `
+    <div class="sig-row">
+      <span class="sig-name">${s.name}</span>
+      <span class="sig-status ${s.cls}">${s.status}</span>
+      <span class="sig-note">${s.note}</span>
+    </div>`).join('');
+
+  // ── Recommendations ──
+  const recos = buildRecommendations(pred, url, riskScore);
+  document.getElementById('recoList').innerHTML = recos.map(r => `
+    <div class="reco-item">
+      <div class="reco-icon ri-${r.level}">${r.icon}</div>
+      <div class="reco-text">
+        <div class="reco-head">${r.title}</div>
+        <div class="reco-body">${r.body}</div>
+      </div>
+    </div>`).join('');
+}
+
+function buildRecommendations(pred, url, score) {
+  const recos = [];
+  if (pred === 'phishing') {
+    recos.push({ level:'danger', icon:'🚫', title:'Do NOT visit this URL', body:'This URL has been classified as phishing. Do not enter any credentials or personal information.' });
+    recos.push({ level:'danger', icon:'🔑', title:'Change passwords immediately', body:'If you have visited this site and entered credentials, change your passwords immediately and enable 2FA.' });
+    recos.push({ level:'warn',   icon:'📧', title:'Report as phishing', body:'Report this URL to Google Safe Browsing (safebrowsing.google.com/safebrowsing/report_phish) and your email provider.' });
+  } else if (pred === 'malware') {
+    recos.push({ level:'danger', icon:'☠', title:'Malware risk — block immediately', body:'This URL may distribute malware. Do not download any files from this source.' });
+    recos.push({ level:'danger', icon:'🛡', title:'Run a full system scan', body:'If you have visited this URL, run a complete antivirus/antimalware scan immediately.' });
+    recos.push({ level:'warn',   icon:'🌐', title:'Use a sandbox for inspection', body:'Use tools like VirusTotal or ANY.RUN to safely inspect this URL in an isolated environment.' });
+  } else if (pred === 'defacement') {
+    recos.push({ level:'warn',   icon:'⚡', title:'Potentially compromised site', body:'This site may have been hacked. Content may have been altered or weaponized.' });
+    recos.push({ level:'warn',   icon:'🔒', title:'Avoid logging in', body:'Do not enter credentials on a potentially defaced site — it may have been backdoored.' });
+    recos.push({ level:'safe',   icon:'📋', title:'Verify from official sources', body:'Access the service through an official app or by typing the domain directly into your browser.' });
+  } else {
+    recos.push({ level:'safe',   icon:'✅', title:'URL appears safe', body:'No significant threat indicators detected. Always remain vigilant and verify URLs before sharing sensitive data.' });
+    recos.push({ level:'safe',   icon:'🔍', title:'Always double-check domains', body:'Even safe-looking URLs can be typosquatted. Verify the domain spelling carefully before entering credentials.' });
+    if (!url.startsWith('https')) {
+      recos.push({ level:'warn', icon:'🔓', title:'No HTTPS detected', body:'This URL does not use HTTPS. Avoid entering sensitive information over unencrypted connections.' });
+    }
+  }
+  return recos;
+}
+
+function calcEntropy(str) {
+  const freq = {};
+  for (const c of str) freq[c] = (freq[c]||0) + 1;
+  const len = str.length;
+  return -Object.values(freq).reduce((s,f) => { const p=f/len; return s + p*Math.log2(p); }, 0);
+}
+
+function calcRiskScore(url, pred, probs) {
+  let score = 0;
+  const threatProb = 1 - (probs.benign || 0);
+  score += threatProb * 60;
+  if (url.length > 75)    score += 8;
+  if (url.includes('@'))  score += 10;
+  if (/\d{1,3}(\.\d{1,3}){3}/.test(url)) score += 10;
+  if (url.includes('%'))  score += 5;
+  if (/login|secure|account|verify|paypal|bank|signin/i.test(url)) score += 7;
+  return Math.min(100, Math.round(score));
+}
+
+function drawGauge(score, pred) {
+  const canvas = document.getElementById('gaugeCanvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H - 10, r = 72;
+
+  ctx.clearRect(0,0,W,H);
+
+  // Background arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI, 0);
+  ctx.strokeStyle = '#1a2233';
+  ctx.lineWidth   = 14;
+  ctx.lineCap     = 'round';
+  ctx.stroke();
+
+  // Gradient arc
+  const angle  = Math.PI + (score/100) * Math.PI;
+  const colors = { benign:'#10b981', phishing:'#ef4444', malware:'#ef4444', defacement:'#f59e0b' };
+  const col    = score > 70 ? '#ef4444' : score > 40 ? '#f59e0b' : '#10b981';
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI, angle);
+  ctx.strokeStyle = col;
+  ctx.lineWidth   = 14;
+  ctx.lineCap     = 'round';
+  ctx.stroke();
+
+  // Needle
+  const needleAng = Math.PI + (score/100) * Math.PI;
+  const nx = cx + (r) * Math.cos(needleAng);
+  const ny = cy + (r) * Math.sin(needleAng);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(nx, ny);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth   = 2;
+  ctx.lineCap     = 'round';
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 5, 0, 2*Math.PI);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  // Gauge value color
+  document.getElementById('gaugeVal').style.color = col;
+}
+</script>
+</body>
+</html>
